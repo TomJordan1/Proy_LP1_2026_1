@@ -1,4 +1,6 @@
 # Proy_LP1_2026_1
+**IMPACTA** -
+Simulador de Particulas 2D
 
 Roles:
 - QA, Testing & DevOps: Tom Jordan Pérez López  
