@@ -1,17 +1,6 @@
 # Flujogramas — Simulador de N Partículas en 2D
 
-**Curso:** SW-303 · Lenguajes de Programación I (Imperativo)
-**Proyecto:** Simulador de N partículas con colisiones elásticas, gravedad y fricción
-**Stack:** C (C99/C11) · Python/matplotlib · Makefile · gprof
-**Autor:** raul · **Fecha:** 2026-04-18
-
-> Los diagramas están escritos en **Mermaid**. Se renderizan automáticamente en GitHub, GitLab, VS Code (extensión *Markdown Preview Mermaid Support*) y en la mayoría de visores modernos de Markdown.
-
----
-
 ## 1. Flujograma global del proceso completo
-
-Vista end-to-end desde la compilación hasta los gráficos finales. Muestra las tres grandes fases del proyecto: **compilación**, **simulación** y **visualización**.
 
 ```mermaid
 flowchart TD
@@ -36,8 +25,6 @@ flowchart TD
 ---
 
 ## 2. Flujograma del `main()` — Loop principal de simulación
-
-Corresponde al orden de operaciones documentado en `src/simulador.c`. La secuencia por tick está justificada en el Entregable 1: **gravedad → fricción → movimiento → paredes → colisiones → energía → CSV**.
 
 ```mermaid
 flowchart TD
@@ -78,8 +65,6 @@ flowchart TD
 ---
 
 ## 3. Flujograma de actualización física por tick
-
-Detalle de los **7 pasos** que se ejecutan dentro del `for` principal. Cada paso recorre el arreglo de partículas una vez.
 
 ```mermaid
 flowchart TD
@@ -162,7 +147,7 @@ flowchart TD
 
 **Complejidad:** el algoritmo evalúa `N·(N-1)/2` pares por tick → **O(N²)**. Para `N=50` son 1 225 comparaciones/tick; para `N=500` son 124 750 comparaciones/tick.
 
-**Optimización futura sugerida:** *spatial hashing* o *uniform grid* para reducir a **O(N)** amortizado al comparar únicamente partículas en celdas vecinas.
+**Nota (aún por implementar):** *spatial hashing* o *uniform grid* para reducir a **O(N)** amortizado al comparar únicamente partículas en celdas vecinas.
 
 ---
 
@@ -216,35 +201,6 @@ flowchart LR
 
 ---
 
-## 6. Resumen visual — Arquitectura de módulos
-
-```mermaid
-flowchart TB
-    H[particula.h<br/>structs + prototipos]
-    S[simulador.c<br/>main + loop]
-    F[fisicas.c<br/>gravedad, fricción,<br/>movimiento, colisiones]
-    E[csv_export.c<br/>I/O de CSVs]
-    M[Makefile<br/>all · clean · profile · optimized]
-    V[visualizar.py<br/>pandas + matplotlib]
-
-    H -.incluido por.-> S
-    H -.incluido por.-> F
-    H -.incluido por.-> E
-    S --> F
-    S --> E
-    M --> S
-    S -. genera CSV .-> V
-
-    style H fill:#fff9c4,stroke:#f57f17
-    style S fill:#ffe0b2,stroke:#ef6c00
-    style F fill:#ffcdd2,stroke:#c62828
-    style E fill:#e3f2fd,stroke:#1565c0
-    style M fill:#d1c4e9,stroke:#4527a0
-    style V fill:#d4f4dd,stroke:#2e7d32
-```
-
----
-
 ## Leyenda de colores
 
 | Color | Significado |
@@ -257,5 +213,3 @@ flowchart TB
 | Azul | I/O · CSV · matplotlib |
 
 ---
-
-*Fin del documento de flujogramas.*
