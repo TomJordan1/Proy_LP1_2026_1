@@ -1,11 +1,5 @@
 # Avance 03 — Diagrama de Secuencia (UML)
 
-**Rama:** `feature/input-interactivo`
-**Curso:** SW-303 Lenguaje de Programación I
-**Tipo:** UML de secuencia — representa una ejecución típica del simulador con configuración interactiva.
-
----
-
 ## 1. Diagrama
 
 ```mermaid
@@ -71,7 +65,7 @@ El diagrama muestra el flujo completo de una ejecución del simulador en el eje 
 
 ---
 
-## 3. Observaciones de diseño
+## 3. Observaciones
 
 - **Separación de responsabilidades**: `Entrada` nunca accede a archivos CSV ni aplica física; `Fisicas` nunca hace I/O con stdin ni stdout fuera de advertencias.
 - **Idempotencia de `liberar_parametros`**: puede llamarse incluso si el usuario saltó el menú, porque los punteros `.valores` se inicializan a `NULL` en `main` antes de cualquier otra operación.
