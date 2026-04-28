@@ -1,14 +1,8 @@
-# Avance 04 — Diagrama de Casos de Uso (UML)
-
-**Rama:** `feature/input-interactivo`
-**Curso:** SW-303 Lenguaje de Programación I
-**Tipo:** UML de casos de uso — cubre tanto el caso de uso de negocio como el de sistema solicitados.
-
----
+# Diagrama de Casos de Uso (UML)
 
 ## 1. Caso de uso de negocio
 
-Este producto de software puede ser utilizado por ingenieros y científicos que necesiten simular la dinámica de N partículas en 2D bajo gravedad, fricción y colisiones elásticas — por ejemplo para docencia de mecánica clásica, prototipos de *granular matter*, o validación de algoritmos de colisión antes de escalarlos a motores 3D.
+Este producto de software puede ser utilizado por estudiantes y profesores (incluso, si se escala adecuadamente, ingenieros y cientificos) que necesiten simular la dinámica de N partículas en 2D bajo gravedad, fricción y colisiones elásticas — por ejemplo para docencia de mecánica clásica, prototipos de *granular matter*, o validación de algoritmos de colisión antes de escalarlos a motores 3D.
 
 ```mermaid
 graph TB
@@ -73,13 +67,7 @@ graph TB
 
 ---
 
-## 3. Descripción unificada
-
-El primer diagrama captura el valor de negocio: el simulador sirve a cuatro perfiles de usuario —ingenieros, científicos, docentes y estudiantes— con propósitos que van desde la enseñanza de mecánica clásica hasta el benchmarking de algoritmos de colisión, cubriendo así el uso declarado en la especificación del entregable. El segundo diagrama, de nivel de sistema, desglosa las operaciones concretas que el usuario ejecuta por consola: compilar con `make`, configurar parámetros de forma interactiva (que incluye obligatoriamente las sub-decisiones de modo y alcance), correr la simulación (que incluye la persistencia en tres archivos CSV), y pasar la pelota al analista para graficar con Python o perfilar con `gprof`. Las relaciones `<<include>>` marcadas como flechas punteadas dejan claro qué pasos son sub-pasos obligatorios dentro de un caso de uso mayor.
-
----
-
-## 4. Escenario principal (texto narrativo)
+## 3. Escenario principal
 
 **Caso de uso:** Ejecutar simulación con parámetros personalizados.
 **Actor principal:** Usuario (ingeniero/estudiante).
