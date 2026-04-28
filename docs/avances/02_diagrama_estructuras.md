@@ -1,11 +1,5 @@
 # Avance 02 — Diagrama de Estructuras (UML)
 
-**Rama:** `feature/input-interactivo`
-**Curso:** SW-303 Lenguaje de Programación I
-**Tipo:** UML de estructuras (estático) — representado como *class diagram* en Mermaid
-
----
-
 ## 1. Diagrama
 
 ```mermaid
