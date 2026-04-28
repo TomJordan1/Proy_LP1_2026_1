@@ -1,4 +1,4 @@
-# Avance 01 — Entrada interactiva de parámetros
+# Entrada interactiva de parámetros
 
 **Rama:** `feature/input-interactivo`
 **Fecha:** 2026-04-19
