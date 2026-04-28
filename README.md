@@ -7,3 +7,6 @@ Roles:
 - Developer 1 (C): Ricardo Gaspar Reyes Campos
 - Apoyo transversal: Sandro Giancarlo Sanchez Vicaña
 - Developer 2 (Python): Raul Antonio Guzmán López
+
+Diapositivas (Canva):
+https://canva.link/7kgt3v5ov65935t
