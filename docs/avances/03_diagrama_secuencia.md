@@ -1,6 +1,3 @@
-Aquí tienes la reescritura de las descripciones adaptada exactamente a lo que muestra el nuevo diagrama de secuencia, utilizando un lenguaje técnico y directo, ideal para tu repositorio y el informe formal.
-
-```markdown
 # Diagrama de Secuencia (UML)
 
 ## 1. Diagrama
