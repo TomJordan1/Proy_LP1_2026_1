@@ -1,4 +1,4 @@
-# Avance 02 — Diagrama de Estructuras (UML)
+# Diagrama de Estructuras (UML)
 
 ## 1. Diagrama
 
