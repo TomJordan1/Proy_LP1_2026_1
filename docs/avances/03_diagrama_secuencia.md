@@ -1,4 +1,4 @@
-# Avance 03 — Diagrama de Secuencia (UML)
+# Diagrama de Secuencia (UML)
 
 ## 1. Diagrama
 
