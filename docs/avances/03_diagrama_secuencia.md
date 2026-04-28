@@ -1,73 +1,54 @@
+Aquí tienes la reescritura de las descripciones adaptada exactamente a lo que muestra el nuevo diagrama de secuencia, utilizando un lenguaje técnico y directo, ideal para tu repositorio y el informe formal.
+
+```markdown
 # Diagrama de Secuencia (UML)
 
 ## 1. Diagrama
 
 ```mermaid
 sequenceDiagram
-  actor U as Usuario
-  participant M as main (simulador.c)
-  participant E as Modulo Entrada
-  participant F as Modulo Fisicas
-  participant C as Modulo CSV
-  participant FS as Sistema de Archivos
+    autonumber
+    actor U as Usuario
+    participant C as Motor Simulador (C)
+    participant FS as Archivos Locales (CSV)
+    participant P as Visualizador (Python)
 
-  U->>M: ./simulador [N] [ticks]
-  M->>M: srand(time(NULL))
-  M->>M: inicializar ConfigSimulacion con defaults
-  M->>E: configurar_interactivamente(&config)
+    U->>C: Ejecutar ./simulador
+    
+    alt Configuración Interactiva
+        C->>U: Solicitar parámetros (N, g, dt...)
+        U-->>C: Ingresar valores
+    else Modo Rápido (Defecto)
+        C->>C: Usar parámetros históricos
+    end
 
-  alt Usuario responde "S"
-    E->>U: prompts (N, gravedad, velocidad, masa, radio)
-    U-->>E: modo (M/A), alcance (G/P), valores o rangos
-    E->>E: asignar arrays dinamicos si POR_PARTICULA
-  else Usuario responde "N"
-    E->>E: usar defaults historicos
-  end
-  E-->>M: config completamente poblada
+    C->>C: Inicializar N partículas (calloc)
+    
+    loop Para cada tick (0 a ticks_totales)
+        C->>C: Resolver Física (Euler y Colisiones)
+        C->>FS: Guardar estado (trayectorias.csv, energia.csv)
+    end
+    
+    C->>FS: Guardar rendimiento (benchmark.csv)
+    C->>C: Liberar memoria (free)
+    C-->>U: Simulación completada (Exit 0)
 
-  M->>M: calloc(N, sizeof(Particula))
-  M->>F: inicializar_particulas(p, N, &config)
-  F->>F: sortear/leer masa, radio, velocidad y posicion sin solapamiento
-  F-->>M: particulas listas
-
-  M->>C: abrir_csv_trayectorias()
-  M->>C: abrir_csv_energia()
-  C->>FS: fopen(..., "w")
-  FS-->>C: FILE*
-  C-->>M: handles de archivo
-
-  loop Por cada tick (0 .. ticks_totales-1)
-    M->>F: aplicar_gravedad()
-    M->>F: aplicar_friccion()
-    M->>F: mover_particulas()
-    M->>F: colision_paredes()
-    M->>F: detectar_y_resolver_colisiones()
-    M->>F: calcular_energia_cinetica()
-    M->>F: calcular_energia_potencial()
-    F-->>M: Ek, Ep
-    M->>C: exportar_tick_trayectorias()
-    M->>C: exportar_tick_energia()
-    C->>FS: fprintf(...)
-  end
-
-  M->>C: exportar_benchmark(N, ticks, tiempo)
-  C->>FS: append a benchmark.csv
-  M->>M: free(particulas)
-  M->>E: liberar_parametros(&config)
-  M-->>U: resumen y codigo de salida 0
+    U->>P: Ejecutar visualizar.py
+    P->>FS: Leer datos (pandas)
+    FS-->>P: DataFrames poblados
+    P->>P: Generar gráficos (matplotlib/PIL)
+    P-->>U: Mostrar GIF y gráficos de energía
 ```
 
 ---
 
 ## 2. Descripción
 
-El diagrama muestra el flujo completo de una ejecución del simulador en el eje temporal. La interacción arranca con el `main` recibiendo argumentos del CLI, continúa con el nuevo módulo `Entrada` que dialoga con el usuario para poblar `ConfigSimulacion`, y prosigue con la inicialización de partículas a cargo del módulo `Fisicas`. El núcleo de la ejecución es el bucle de ticks en el cual el orquestador invoca —en el orden justificado en el Entregable 1— gravedad, fricción, movimiento, colisiones con paredes, colisiones entre partículas, cómputo de energías y persistencia en CSV. Al terminar, el `main` libera en orden los recursos: el arreglo de partículas y luego los arreglos internos de `ConfigSimulacion`, garantizando ausencia de *memory leaks*.
+El diagrama ilustra el flujo de ejecución completo (End-to-End) del sistema, abarcando las dos fases principales del proyecto. La secuencia inicia cuando el usuario interactúa con el ejecutable escrito enC, el cual solicita la configuración o adopta parámetros por defecto antes de reservar memoria dinámicamente. El núcleo del proceso es el bucle temporal, donde el motor resuelve el estado físico (integración matemática y colisiones) y lo persiste iterativamente en el sistema de archivos. Tras asegurar la liberación de memoria y concluir la simulación, el control regresa al usuario, quien detona la segunda fase ejecutando el script de Python. Este visualizador consume los datos crudos y devuelve los productos multimedia finales.
 
 ---
 
-## 3. Observaciones
+## 3. Observaciones de diseño
 
-- **Separación de responsabilidades**: `Entrada` nunca accede a archivos CSV ni aplica física; `Fisicas` nunca hace I/O con stdin ni stdout fuera de advertencias.
-- **Idempotencia de `liberar_parametros`**: puede llamarse incluso si el usuario saltó el menú, porque los punteros `.valores` se inicializan a `NULL` en `main` antes de cualquier otra operación.
-- **Reversión segura ante errores**: las rutas de error (malloc fallido, fopen fallido) imprimen por `stderr` y retornan `EXIT_FAILURE`, sin dejar archivos huérfanos abiertos.
-- **Escalabilidad del bucle**: el único punto cuadrático en N es `detectar_y_resolver_colisiones`; el resto es lineal, lo que se confirma en el benchmark del Entregable 1.
+- **Visión End-to-End estructurada**: El flujo demuestra una separación tecnológica clara: un *backend* en C orientado al cálculo numérico de alto rendimiento y un *frontend* analítico en Python dedicado exclusivamente a la renderización.
+- **Persistencia como puente de comunicación**: La interacción entre C y Python se realiza de forma asíncrona a través del sistema de archivos locales (CSV). Esto garantiza un acoplamiento nulo entre el motor físico y el visualizador.
