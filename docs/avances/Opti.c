@@ -173,7 +173,7 @@ int main() {
         if (p[i].r > max_r) max_r = p[i].r;
     }
 
-    /* 4. Datos del Spatial Hashing (Limitados a 4 * N) */
+    /* 4. Datos del Spatial Hashing (Limitados a 12 * N) */
     double lado_celda = 2.0 * max_r;
     int hash_size = 12 * conf.n_particulas; /* Memoria O(N) */
 
@@ -189,10 +189,7 @@ int main() {
             actualizar_fisica_basica(&p[i], conf);
             resolver_colision_paredes(&p[i], conf);
         }
-
-        /* ----------------------------------------------------
-         * BUCLE B: SPATIAL HASHING $O(N)$ EN MEMORIA Y PROCESO
-         * ---------------------------------------------------- */
+        /* BUCLE B: SPATIAL HASHING O(N) EN MEMORIA Y PROCESO */
         /* B.1 - Vaciar la tabla Hash (solo toma 4N iteraciones) */
         memset(head, -1, hash_size * sizeof(int));
         /* B.2 - Llenar la tabla Hash */
