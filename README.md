@@ -9,4 +9,4 @@ Roles:
 - Developer 2 (Python): Raúl Antonio Guzmán López
 
 Diapositivas (Canva):
-https://canva.link/7kgt3v5ov65935t
+https://canva.link/zb432bjr0ofj4bi
