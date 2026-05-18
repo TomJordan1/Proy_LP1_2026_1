@@ -1,6 +1,8 @@
 # Proy_LP1_2026_1
-**IMPACTA** -
+***IMPACTA*** -
 Simulador de Particulas 2D
+
+El presente proyecto describe el diseño e implementación de un simulador de colisiones de partículas en 2D, estructurado como una plataforma dual para la física computacional y la generación estructurada de datos, idónea para *Machine Learning*.
 
 Roles:
 - QA, Testing & DevOps: Tom Jordan Pérez López  
