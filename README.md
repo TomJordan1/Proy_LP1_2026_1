@@ -1,5 +1,5 @@
 # ***IMPACTA*** 
--- *Simulador de colisiones de partículas 2D* --
+-- *Simulador de partículas 2D con física básica* --
 
 El presente proyecto describe el diseño e implementación de un simulador de colisiones de partículas en 2D, estructurado como una plataforma dual para la física computacional y la generación estructurada de datos, idónea para *Machine Learning*.
 
