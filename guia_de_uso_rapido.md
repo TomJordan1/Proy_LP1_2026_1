@@ -2,7 +2,7 @@
 Abre una terminal de PowerShell o CMD orientada en la carpeta raíz del código fuente (Proy_LP1_2026_1/src) y ejecuta el comando de automatización relativo a makefile.
 
 ## Comando Base de Ejecución:
-El comando requiere tres parámetros obligatorios para configurar el entorno sin necesidad de interacción manual por teclado:
+El comando requiere tres parámetros obligatorios para configurar el entorno sin necesidad de interacción manual por teclado. A continuación, un ejemplo de uso:
 
 ```text
 mingw32-make run ANCHO=3000 ALTO=1500 N_PART=200
