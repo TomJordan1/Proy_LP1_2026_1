@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Script para animar trayectorias.csv generado desde Opti.c.
-"""
-
 import os
 import sys
 import pandas as pd
@@ -25,12 +21,9 @@ def animar_particulas(csv_path, limites_caja, output_gif='simulacion_colisiones.
     
     fig, ax = plt.subplots(figsize=(8, 8))
     
-    print(f"Renderizando {len(ticks)} fotogramas...")
-    
     def update(tick):
         ax.clear()
         
-        # Ajustamos los límites a lo ingresado por consola
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
         ax.set_aspect('equal') 
@@ -81,28 +74,26 @@ def animar_particulas(csv_path, limites_caja, output_gif='simulacion_colisiones.
     print("¡Animación guardada con éxito!")
 
 if __name__ == '__main__':
-    archivo_csv = 'trayectorias.csv'
+    print("--- ANIMADOR DE COLISIONES AUTOMATIZADO ---")
     
-    print("--- ANIMADOR DE COLISIONES ---")
-    
-    # Intentar deducir la caja para dar una sugerencia (basado en (x,y) máximos del CSV)
-    try:
-        if os.path.exists(archivo_csv):
-            df_temp = pd.read_csv(archivo_csv)
-            max_x = (df_temp['x'] + df_temp['radio']).max()
-            max_y = (df_temp['y'] + df_temp['radio']).max()
-            print(f"(Basado en el CSV, parece que tu caja es de al menos Ancho ~ {max_x:.0f}, Alto ~ {max_y:.0f})")
-    except:
-        pass
+    # Leer argumentos desde la terminal (provistos por el Makefile)
+    if len(sys.argv) >= 4:
+        ancho = float(sys.argv[1])
+        alto = float(sys.argv[2])
+        archivo_csv = sys.argv[3]
+    else:
+        # Fallback interactivo si se ejecuta manualmente
+        print("Argumentos insuficientes, modo manual...")
+        archivo_csv = 'target/trayectorias.csv'
+        ancho = float(input("Ingresa el Ancho del entorno: "))
+        alto = float(input("Ingresa el Alto del entorno: "))
 
-    # Preguntarle al usuario igual que en C
-    try:
-        ancho = float(input("Ingresa el Ancho del entorno que usaste en C: "))
-        alto = float(input("Ingresa el Alto del entorno que usaste en C: "))
-    except ValueError:
-        print("Entrada inválida. Se usarán 1000x1000 por defecto.")
-        ancho, alto = 1000, 1000
-        
-    MI_CAJA = (0, ancho, 0, alto) 
+    MI_CAJA = (0, ancho, 0, alto)
     
-    animar_particulas(archivo_csv, limites_caja=MI_CAJA, output_gif='simulacion_colisiones.gif', fps=30)
+    # Asegurar que el GIF se guarde en la misma carpeta que el CSV
+    directorio = os.path.dirname(archivo_csv)
+    if directorio == "":
+        directorio = "."
+    output_path = os.path.join(directorio, 'simulacion_colisiones.gif')
+    
+    animar_particulas(archivo_csv, limites_caja=MI_CAJA, output_gif=output_path, fps=30)

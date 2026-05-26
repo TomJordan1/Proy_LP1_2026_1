@@ -1,5 +1,11 @@
 #ifndef FISICA
 #define FISICA
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 typedef struct {
     double x, y;
     double vx, vy;
