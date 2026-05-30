@@ -1,5 +1,15 @@
-# ***IMPACTA*** 
--- ***Simulador de partículas 2D con física básica*** --
+<h1 align="center">
+  <strong>IMPACTA</strong>
+</h1>
+
+<p align="center">
+  Simulador de partículas 2D con física básica
+</p>
+
+
+<p align="center">
+  <img src="example.gif" width="250" alt="Ejemplo de gif de salida">
+</p>
 
 El presente proyecto describe el diseño e implementación de un simulador de colisiones de partículas en 2D, estructurado como una plataforma dual para la física computacional y la generación estructurada de datos, idónea para *Machine Learning*.
 
