@@ -27,6 +27,7 @@ El presente proyecto describe el diseño e implementación de un simulador de co
 ```text
 Proy_LP1_2026_1/
 ├── .gitignore                  # Archivos y carpetas ignorados por Git
+├── example.gif                 # Ejemplo de la salida deseada
 ├── README.md                   # Documentación principal del proyecto
 ├── docs/                       # Documentación adicional, informes o manuales del proyecto
 └── src/                        # Código fuente principal
