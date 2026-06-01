@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "Simulador.h"
 void actualizar_fisica_basica(Particula *p, Config c) {
     p->vy += c.g * c.dt;

@@ -1,5 +1,6 @@
-#include "Simulador.h"
+#include <stdio.h>
 
+#include "Simulador.h"
 // FUNCIONES DE INTERFAZ / CONFIGURACIÓN
 Config configurar_sistema() {
     Config c;
@@ -19,7 +20,7 @@ Config configurar_sistema() {
     getchar();
 
     if (opcion == 's' || opcion == 'S') {
-        c.ticks = 1000;
+        c.ticks = 10;
         c.dt = 0.008;
         c.g = 9.81;
         c.e = 0.85;
