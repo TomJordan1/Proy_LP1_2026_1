@@ -130,7 +130,8 @@ int main() {
 
     double total_t = (double)(clock() - inicio) / CLOCKS_PER_SEC;
     FILE *f_bench = fopen("benchmark.csv", "a");
-    fprintf(f_bench, "%d,%d,%.4f\n", conf.n_particulas, conf.ticks, total_t);
+    fprintf(f_bench, "%d,%d,%.4f, %.4f\n", conf.n_particulas, conf.ticks, total_t,
+            (float)conf.n_particulas * conf.ticks / total_t);
 
     fclose(f_tray);
     fclose(f_ener);
