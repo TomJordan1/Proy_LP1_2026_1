@@ -5,7 +5,8 @@
 Config configurar_sistema() {
     Config c;
     char opcion;
-
+    
+    printf("--- IMPACTA ---\n");
     printf("--- SIMULADOR CON GRID HASHING ESPACIAL $O(N)$ ---\n");
     printf("Dimensiones del entorno (Ancho): ");
     scanf("%lf", &c.ancho);
