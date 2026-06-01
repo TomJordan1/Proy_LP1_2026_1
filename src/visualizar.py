@@ -111,7 +111,8 @@ def cargar_benchmark(ruta):
 # GRAFICO 1: ANIMACION GIF (version eficiente)
 # =============================================================
 def generar_animacion(df, ancho, alto, max_frames=120,
-                      archivo="simulacion.gif", fps=25):
+                      archivo="simulacion.gif", fps=25,
+                      mostrar_flechas=False, mostrar_ids=False):
     """
     Genera el GIF de forma eficiente:
       - groupby('tick') UNA sola vez (evita filtrar el DataFrame en cada frame)
@@ -135,7 +136,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
     fig.patch.set_facecolor("#0d1117")
     ax.set_facecolor("#0d1117")
     ax.set_xlim(0, ancho)
-    ax.set_ylim(0, alto)
+    ax.set_ylim(alto, 0)   # Y invertido: y=0 arriba, gravedad cae hacia abajo
     ax.set_aspect("equal")
     ax.set_xlabel("Posicion X (m)", color="white")
     ax.set_ylabel("Posicion Y (m)", color="white")
@@ -152,18 +153,50 @@ def generar_animacion(df, ancho, alto, max_frames=120,
                          linewidths=0.4)
     titulo = ax.set_title("", color="white", fontsize=13, fontweight="bold")
 
+    quiver = None        # se crea en el primer frame si mostrar_flechas
+    textos = []          # objetos Text para ids (se crean en el primer frame)
+
     from PIL import Image as PILImage
     frames_pil = []
-    print(f"  Generando GIF eficiente ({len(frames)} cuadros de {n_ticks} ticks)...",
-          flush=True)
+    extra = []
+    if mostrar_flechas:
+        extra.append("flechas")
+    if mostrar_ids:
+        extra.append("radio")
+    print(f"  Generando GIF eficiente ({len(frames)} cuadros de {n_ticks} ticks"
+          f"{', con ' + '+'.join(extra) if extra else ''})...", flush=True)
 
     for k, t in enumerate(frames):
         g = grupos[t].sort_values("id")
-        scatter.set_offsets(g[["x", "y"]].values)
-        s = (g["radio"].values * pts_por_unidad) ** 2
-        scatter.set_sizes(s)
+        xy = g[["x", "y"]].values
+        scatter.set_offsets(xy)
+        sz = (g["radio"].values * pts_por_unidad) ** 2
+        scatter.set_sizes(sz)
         scatter.set_color([colores[pid] for pid in g["id"].values])
         titulo.set_text(f"Simulacion V2 (Grid Hashing) — Tick {t}")
+
+        # Flechas de velocidad (vector vx, vy en unidades del mundo)
+        if mostrar_flechas:
+            vx, vy = g["vx"].values, g["vy"].values
+            if quiver is None:
+                quiver = ax.quiver(xy[:, 0], xy[:, 1], vx, vy, color="#e74c3c",
+                                   angles="xy", scale_units="xy", scale=1,
+                                   width=0.004, headwidth=4, zorder=6)
+            else:
+                quiver.set_offsets(xy)
+                quiver.set_UVC(vx, vy)
+
+        # Tamano de radio dentro de cada circulo
+        if mostrar_ids:
+            if not textos:
+                for (xi, yi), rr in zip(xy, g["radio"].values):
+                    textos.append(ax.text(xi, yi, f"{rr:.0f}", ha="center",
+                                          va="center", fontsize=6, color="white",
+                                          fontweight="bold", zorder=7))
+            else:
+                for txt, (xi, yi) in zip(textos, xy):
+                    txt.set_position((xi, yi))
+
         fig.canvas.draw()
         w_px, h_px = fig.canvas.get_width_height()
         img = PILImage.frombuffer("RGBA", (w_px, h_px),
@@ -237,6 +270,7 @@ def graficar_heatmap(df, ancho, alto, archivo="heatmap_densidad.png"):
                  fontsize=13, fontweight="bold", pad=12)
     ax.set_xlim(0, ancho)
     ax.set_ylim(0, alto)
+    ax.invert_yaxis()      # Y invertido para coincidir con la convencion de la simulacion
     ax.set_aspect("equal")
     plt.tight_layout()
     plt.savefig(archivo)
@@ -297,6 +331,33 @@ def graficar_benchmark(df, archivo="grafico_benchmark.png"):
 # =============================================================
 # PRINCIPAL
 # =============================================================
+def preguntar_estilo():
+    """
+    Menu para elegir como se dibuja la animacion. Si no hay terminal interactiva
+    (p.ej. ejecucion automatica), devuelve el estilo simple por defecto.
+    Tambien se puede forzar por bandera: --flechas, --ids, --simple.
+    """
+    if "--simple" in sys.argv:
+        return False, False
+    flechas = "--flechas" in sys.argv
+    ids = "--ids" in sys.argv
+    if flechas or ids:
+        return flechas, ids
+    try:
+        print("\n\u00bfComo quieres la animacion?")
+        print("  1. Simple        - circulos por radio (mas rapido)")
+        print("  2. Con flechas   - circulos + vector de velocidad")
+        print("  3. Flechas + radio - circulos + flechas + tamano del radio")
+        op = input("Opcion [1/2/3] (Enter = 1): ").strip()
+    except (EOFError, OSError):
+        return False, False
+    if op == "2":
+        return True, False
+    if op == "3":
+        return True, True
+    return False, False
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     solo_bench = "--solo-benchmark" in sys.argv
@@ -332,9 +393,11 @@ def main():
         ancho, alto = ancho or 1000.0, alto or 1000.0
 
     if not sin_gif:
+        mostrar_flechas, mostrar_ids = preguntar_estilo()
         print("[1/4] Animacion GIF...")
         generar_animacion(df_tray, ancho, alto, max_frames=120,
-                          archivo="simulacion.gif")
+                          archivo="simulacion.gif",
+                          mostrar_flechas=mostrar_flechas, mostrar_ids=mostrar_ids)
     else:
         print("[1/4] Animacion GIF... OMITIDA (--sin-gif)")
 

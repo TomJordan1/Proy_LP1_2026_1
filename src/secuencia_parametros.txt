@@ -1,0 +1,42 @@
+========================================================================
+ SECUENCIA DE PARAMETROS DEL SIMULADOR  (modo "que se note la caida")
+ Proy_LP1_2026_1  -  Simulador de particulas con gravedad
+========================================================================
+
+El programa pide los valores EN ESTE ORDEN. Escribe uno, Enter, el siguiente.
+
+ VALOR     | PROMPT EN PANTALLA                         | QUE SIGNIFICA
+-----------+--------------------------------------------+-------------------------------
+ 1000      | Dimensiones del entorno (Ancho)            | Ancho de la caja, en metros.
+ 1000      | Dimensiones del entorno (Alto)             | Alto de la caja, en metros.
+ 100       | Numero de particulas                       | Cuantas particulas se simulan.
+ n         | Usar parametros predeterminados? (s/n)     | "n" = los defines tu (modo manual).
+ 3000      | Ticks totales                              | Cuantos pasos dura la simulacion.
+           |                                            | Mas ticks = mas tiempo = mas caida.
+ 0.008     | dt (paso de tiempo)                        | Segundos que avanza cada tick.
+           |                                            | Tiempo total = ticks * dt = 24 s.
+ 9.81      | Gravedad                                   | Aceleracion hacia abajo (m/s^2).
+           |                                            | Sube a 30 para caida mas rapida.
+ 0.4       | Restitucion paredes (0-1)                  | Rebote contra el suelo/paredes.
+           |                                            | 1 = rebote perfecto; 0.4 = rebotan
+           |                                            | poco y se asientan abajo.
+ 0.05      | Rozamiento                                 | Friccion que frena el movimiento.
+           |                                            | Mas alto = se detienen antes.
+ 1         | Opcion de inicializacion (1=Alea, 2=Manual)| 1 = posiciones/velocidades al azar.
+========================================================================
+
+SECUENCIA LIMPIA (para copiar/teclear en orden):
+
+    1000
+    1000
+    100
+    n
+    3000
+    0.008
+    9.81
+    0.4
+    0.05
+    1
+
+En una sola linea:  1000 1000 100 n 3000 0.008 9.81 0.4 0.05 1
+========================================================================
