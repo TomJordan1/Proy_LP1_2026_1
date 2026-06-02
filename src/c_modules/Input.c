@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "Simulador.h"
-// FUNCIONES DE INTERFAZ / CONFIGURACIÓN
+
 Config configurar_sistema() {
     Config c;
     char opcion;

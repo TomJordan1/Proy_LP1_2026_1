@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMPACTA — Módulos y Flujos del Simulador</title>
+<style>
+  :root{
+    --bg1:#150f3d; --bg2:#241568; --bg3:#0d2a6b;
+    --cyan:#46d6e6; --blue:#4361ee; --violet:#9b4dff; --magenta:#d44ad6;
+    --ink:#ffffff; --soft:#c7c9ef; --card:rgba(255,255,255,.06);
+    --cardb:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI",Montserrat,Arial,sans-serif;
+    background:#0a0826;color:var(--ink);overflow:hidden;
+  }
+  .deck{height:100vh;width:100vw;position:relative}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:48px 64px 64px;
+    background:
+      radial-gradient(1100px 700px at 85% -10%, rgba(155,77,255,.35), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(67,97,238,.40), transparent 55%),
+      linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+  }
+  .slide.active{display:flex;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1{font-size:42px;letter-spacing:.5px;margin-bottom:6px}
+  h2{font-size:30px;letter-spacing:3px;text-transform:uppercase;margin-bottom:22px;
+     background:linear-gradient(90deg,var(--cyan),var(--violet));
+     -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+  h3{font-size:19px;color:var(--cyan);margin-bottom:6px}
+  p,li{color:var(--soft);font-size:16px;line-height:1.5}
+  .footer{position:absolute;left:64px;bottom:26px;font-weight:800;letter-spacing:4px;
+    font-size:14px;color:rgba(255,255,255,.55)}
+  .pageno{position:absolute;right:40px;bottom:26px;font-size:13px;color:rgba(255,255,255,.45)}
+  /* Cards grid */
+  .grid{display:grid;gap:18px;margin-top:6px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--card);border:1px solid var(--cardb);border-radius:16px;
+    padding:18px 18px;backdrop-filter:blur(4px)}
+  .card .tag{font-family:Consolas,monospace;color:var(--cyan);font-size:15px;font-weight:700}
+  .card h3{font-size:16px;color:#fff;margin:6px 0 6px}
+  .card p{font-size:14px}
+  .mono{font-family:Consolas,"Courier New",monospace}
+  code,pre{font-family:Consolas,monospace}
+  pre{background:rgba(0,0,0,.35);border:1px solid var(--cardb);border-left:3px solid var(--cyan);
+    padding:14px 16px;border-radius:10px;color:#dfe3ff;font-size:14px;line-height:1.45;overflow:auto}
+  .lead{font-size:20px;color:#fff;max-width:900px}
+  .accent{color:var(--cyan);font-weight:700}
+  .pill{display:inline-block;background:rgba(70,214,230,.15);border:1px solid rgba(70,214,230,.4);
+    color:var(--cyan);border-radius:999px;padding:3px 12px;font-size:13px;margin:3px 4px 0 0}
+  /* Flow */
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:14px;flex-wrap:wrap}
+  .node{background:var(--card);border:1px solid var(--cardb);border-radius:14px;padding:14px 16px;
+    min-width:150px;flex:1;text-align:center}
+  .node .n{display:inline-flex;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));color:#06122b;font-weight:800;font-size:14px;margin-bottom:6px}
+  .node b{color:#fff;font-size:15px;display:block}
+  .node small{color:var(--soft);font-size:12.5px}
+  .arrow{align-self:center;color:var(--cyan);font-size:26px;padding:0 8px}
+  .vflow{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-width:780px}
+  .vnode{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--cardb);
+    border-radius:12px;padding:12px 16px}
+  .vnode .bullet{flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,var(--violet),var(--magenta));display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:#fff}
+  .vnode b{color:#fff}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
+  .big{font-size:30px;font-weight:800;color:#fff}
+  .cyan{color:var(--cyan)} .vio{color:var(--violet)} .mag{color:var(--magenta)}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .nav{position:absolute;right:34px;bottom:54px;display:flex;gap:8px}
+  .nav button{background:var(--card);border:1px solid var(--cardb);color:#fff;border-radius:8px;
+    padding:6px 12px;cursor:pointer;font-size:16px}
+  .hint{position:absolute;top:20px;right:30px;font-size:12px;color:rgba(255,255,255,.4)}
+  .badge{font-size:13px;color:var(--soft)}
+  ul{margin-left:18px}
+  .title-impacta{font-size:84px;font-weight:900;letter-spacing:2px;line-height:1;
+    background:linear-gradient(90deg,#fff 0%,var(--cyan) 45%,var(--violet) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin:8px 0 18px}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 PORTADA -->
+  <section class="slide active center">
+    <p class="badge">Universidad Nacional de Ingeniería · FIIS · Lenguaje de Programación 1 — SW301U</p>
+    <div class="title-impacta">IMPACTA</div>
+    <h1>Simulador de Partículas 2D</h1>
+    <p class="lead" style="margin-top:10px">Módulos del código y lógica de flujo de los programas</p>
+    <p style="margin-top:22px">Tom Jordan Pérez López · Raul Antonio Guzmán López · Ricardo Gaspar Reyes Campos · Sandro Giancarlo Chávez Vicaña</p>
+    <p class="badge" style="margin-top:8px">Docente: Mag. Juan Luis Herencia Guerra · Lima 2026</p>
+    <div class="footer">IMPACTA</div><div class="pageno">01</div>
+  </section>
+
+  <!-- 2 FASES / ARQUITECTURA -->
+  <section class="slide">
+    <h2>Fases del programa</h2>
+    <p class="lead">El sistema se divide en tres etapas: el <span class="accent">motor físico en C</span>, el <span class="accent">almacenamiento en CSV</span> y la <span class="accent">visualización en Python</span>.</p>
+    <div class="flow">
+      <div class="node"><span class="n">1</span><b>Motor en C</b><small>Simulación física, colisiones y cálculo de energía por tick.</small></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">2</span><b>Almacenamiento</b><small>Exportación a archivos CSV: trayectorias, energía y benchmark.</small></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">3</span><b>Visualización Python</b><small>Gráficas, GIF/MP4 y visor en tiempo real a partir de los CSV.</small></div>
+    </div>
+    <p style="margin-top:26px">Separación de responsabilidades: <span class="cyan">C</span> hace el cómputo intensivo; <span class="vio">Python</span> hace el análisis y la presentación. Se comunican solo por archivos CSV.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">02</div>
+  </section>
+
+  <!-- 3 MODULOS EN C -->
+  <section class="slide">
+    <h2>Módulos en C</h2>
+    <div class="grid g4">
+      <div class="card"><div class="tag">Simulador.h</div><h3>Definiciones</h3><p>Structs <span class="mono">Particula</span> y <span class="mono">Config</span>, y prototipos de funciones. Cabecera compartida por todos los módulos.</p></div>
+      <div class="card"><div class="tag">Input.c</div><h3>Menú / configuración</h3><p><span class="mono">configurar_sistema()</span>: pide ancho, alto, nº de partículas y parámetros físicos (g, dt, e, μ).</p></div>
+      <div class="card"><div class="tag">Fisica.c</div><h3>Física y colisiones</h3><p>Movimiento (Euler), gravedad y fricción, rebote con paredes y colisión elástica entre partículas.</p></div>
+      <div class="card"><div class="tag">Opti.c</div><h3>Simulador principal</h3><p><span class="mono">main()</span>: inicializa partículas, ejecuta el bucle de ticks con <b>hashing espacial</b> y exporta los CSV.</p></div>
+    </div>
+    <div class="flow" style="margin-top:30px">
+      <div class="node"><span class="n">1</span><b>Entrada</b><small>Ingreso de parámetros</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">2</span><b>Inicialización</b><small>Crear partículas + tabla hash</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">3</span><b>Simulación</b><small>Loop de ticks</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">4</span><b>Cálculo</b><small>Energía Ek, Ep por tick</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">5</span><b>Salida</b><small>Archivos CSV</small></div>
+    </div>
+    <div class="footer">IMPACTA</div><div class="pageno">03</div>
+  </section>
+
+  <!-- 4 MODULOS EN PYTHON -->
+  <section class="slide">
+    <h2>Módulos en Python</h2>
+    <div class="grid g2">
+      <div class="card"><div class="tag">visualizar.py</div><h3>Gráficas + GIF</h3><p>Lee los CSV y genera: GIF de la simulación (con flechas de velocidad y radio opcionales), curva de energía, heatmap de densidad y gráfico de benchmark.</p></div>
+      <div class="card"><div class="tag">visualizar_realtime.py</div><h3>Visor en tiempo real</h3><p>Reproducción interactiva con <b>pyqtgraph (OpenGL)</b>: play/pausa, slider, submuestreo y exportación a MP4. Mucho más rápido que el GIF.</p></div>
+    </div>
+    <p style="margin-top:18px">Librerías usadas:</p>
+    <div>
+      <span class="pill">pandas — manejo de CSV</span>
+      <span class="pill">NumPy — operaciones numéricas</span>
+      <span class="pill">Matplotlib — gráficos y GIF</span>
+      <span class="pill">pyqtgraph — visor en vivo</span>
+    </div>
+    <div class="flow" style="margin-top:26px">
+      <div class="node"><span class="n">1</span><b>Entrada</b><small>Lectura de CSV de C</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">2</span><b>Proceso</b><small>Pandas/NumPy limpian datos</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">3</span><b>Análisis</b><small>Energía, heatmap, benchmark</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">4</span><b>Salida</b><small>PNG / GIF / MP4</small></div>
+    </div>
+    <div class="footer">IMPACTA</div><div class="pageno">04</div>
+  </section>
+
+  <!-- 5 PIPELINE DE DATOS -->
+  <section class="slide">
+    <h2>Flujo de datos: C → CSV → Python</h2>
+    <div class="two">
+      <div>
+        <h3>El motor en C escribe 3 archivos</h3>
+        <div class="vflow">
+          <div class="vnode"><div class="bullet">A</div><div><b>trayectorias.csv</b><br><small class="mono">tick, id, x, y, vx, vy, radio</small></div></div>
+          <div class="vnode"><div class="bullet">B</div><div><b>energia.csv</b><br><small class="mono">tick, cinetica, potencial, total</small></div></div>
+          <div class="vnode"><div class="bullet">C</div><div><b>benchmark.csv</b><br><small class="mono">n_particulas, ticks, tiempo, part/seg</small></div></div>
+        </div>
+      </div>
+      <div>
+        <h3>Python los consume</h3>
+        <div class="vflow">
+          <div class="vnode"><div class="bullet">→</div><div><b>trayectorias</b> → GIF / visor + heatmap de densidad</div></div>
+          <div class="vnode"><div class="bullet">→</div><div><b>energia</b> → curva Ek, Ep, Et vs tiempo (conservación)</div></div>
+          <div class="vnode"><div class="bullet">→</div><div><b>benchmark</b> → rendimiento vs Nº de partículas</div></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:22px">Ventaja del acoplamiento por CSV: el cómputo (C) y el análisis (Python) son <span class="accent">independientes</span> y reutilizables.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">05</div>
+  </section>
+
+  <!-- 6 ESTRUCTURAS -->
+  <section class="slide">
+    <h2>Estructuras de datos</h2>
+    <div class="two">
+      <div>
+        <h3>Partícula</h3>
+        <pre>typedef struct {
+    double x, y;    // posición
+    double vx, vy;  // velocidad
+    double m;       // masa
+    double r;       // radio
+} Particula;</pre>
+      </div>
+      <div>
+        <h3>Configuración del sistema</h3>
+        <pre>typedef struct {
+    int    n_particulas, ticks;
+    double dt;     // paso de tiempo
+    double g;      // gravedad
+    double e;      // restitución
+    double mu;     // fricción
+    double ancho, alto;
+} Config;</pre>
+      </div>
+    </div>
+    <p style="margin-top:18px">Las partículas se guardan en un arreglo global <span class="mono">Particula p[]</span>. La tabla hash usa dos arreglos: <span class="mono">head[]</span> (cabeza por celda) y <span class="mono">next[]</span> (lista enlazada de partículas), logrando memoria <span class="accent">O(N)</span>.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">06</div>
+  </section>
+
+  <!-- 7 BUCLE PRINCIPAL -->
+  <section class="slide">
+    <h2>Flujograma del bucle principal</h2>
+    <p class="lead">Por cada <span class="accent">tick</span> se ejecutan tres sub-bucles en orden:</p>
+    <pre style="max-width:760px">for (int t = 0; t &lt; conf.ticks; t++) { ... }</pre>
+    <div class="vflow" style="max-width:900px">
+      <div class="vnode"><div class="bullet">A</div><div><b>Bucle A — O(N)</b> · Integración semi-implícita de Euler (gravedad + fricción + movimiento) y rebote con las paredes.</div></div>
+      <div class="vnode"><div class="bullet">B</div><div><b>Bucle B — colisiones</b> · Detecta y resuelve choques entre partículas. Fuerza bruta sería O(N²); con hashing espacial baja a <span class="cyan">O(N)</span>.</div></div>
+      <div class="vnode"><div class="bullet">C</div><div><b>Bucle C — O(N)</b> · Suma la energía total del sistema y escribe los datos del instante en los CSV.</div></div>
+    </div>
+    <p style="margin-top:16px">Complejidad por tick (fuerza bruta): O(N)+O(N²)+O(N) = <span class="mag">O(N²)</span> → total <span class="mag">O(T·N²)</span>. Con hashing: <span class="cyan">O(T·N)</span>.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">07</div>
+  </section>
+
+  <!-- 8 OPTIMIZACION -->
+  <section class="slide">
+    <h2>Optimización: Spatial Hashing</h2>
+    <div class="two">
+      <div>
+        <h3 class="mag">Antes — O(N²)</h3>
+        <p>Cada partícula se compara con TODAS las demás:</p>
+        <pre>for i in 0..N
+  for j in i+1..N
+    resolver_colision(p[i], p[j]);</pre>
+        <p><span class="mag">N·(N−1)/2</span> comparaciones.</p>
+      </div>
+      <div>
+        <h3 class="cyan">Después — O(N)</h3>
+        <p>El espacio se divide en celdas de lado <span class="mono">L = 2·max_r</span> y cada partícula solo revisa su celda y 4 vecinas:</p>
+        <pre>cx = floor(x/L);  cy = floor(y/L);
+hash = (cx·p1 XOR cy·p2) mod M;
+// revisar celda propia + 4 vecinas (K≈5)</pre>
+        <p><span class="cyan">~5N</span> comparaciones.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">Tabla hash 1D de tamaño <span class="mono">M = 12·N</span> → memoria O(N). “En vez de comparar contra todo el universo, cada partícula solo verifica a sus vecinos inmediatos.”</p>
+    <div class="footer">IMPACTA</div><div class="pageno">08</div>
+  </section>
+
+  <!-- 9 FLUJOGRAMA COLISIONES -->
+  <section class="slide">
+    <h2>Flujograma de colisión elástica</h2>
+    <div class="flow">
+      <div class="node"><span class="n">1</span><b>Distancia</b><small>d entre centros de p1 y p2</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">2</span><b>¿Choque?</b><small>d &lt; r1 + r2</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">3</span><b>Normal</b><small>vector (nx, ny) entre centros</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">4</span><b>Separar</b><small>corrige solapamiento</small></div>
+    </div>
+    <div class="flow" style="margin-top:14px">
+      <div class="node"><span class="n">5</span><b>Velocidad relativa</b><small>proyección sobre la normal</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">6</span><b>Impulso</b><small>conservación de momento y energía</small></div><div class="arrow">→</div>
+      <div class="node"><span class="n">7</span><b>Actualizar</b><small>nuevas vx, vy de ambas</small></div>
+    </div>
+    <p style="margin-top:20px">La componente <span class="accent">tangencial</span> se mantiene; solo cambia la <span class="accent">normal</span>. Las paredes usan reflexión con coeficiente de restitución <span class="mono">e</span>.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">09</div>
+  </section>
+
+  <!-- 10 FLUJO VISUALIZACION -->
+  <section class="slide">
+    <h2>Lógica de la visualización</h2>
+    <div class="two">
+      <div>
+        <h3>visualizar.py (archivo)</h3>
+        <ul>
+          <li>Pre-agrupa por tick con <span class="mono">groupby</span> (una sola vez).</li>
+          <li>Un único <span class="mono">scatter</span> actualizado por frame (rápido).</li>
+          <li>Menú de estilo: simple / con flechas / flechas + radio.</li>
+          <li>Eje Y invertido → la gravedad cae hacia abajo.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>visualizar_realtime.py (en vivo)</h3>
+        <ul>
+          <li>pyqtgraph + OpenGL: decenas de miles de puntos a ~60 fps.</li>
+          <li>Datos indexados por tick → sin filtrar el DataFrame por frame.</li>
+          <li>Controles: play/pausa, slider, velocidad, submuestreo.</li>
+          <li>Exporta MP4 (más ligero que GIF).</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px"><span class="accent">Futuro:</span> para N masivo → vispy / datashader, o render en C (SDL2/raylib) volcando frames a FFmpeg.</p>
+    <div class="footer">IMPACTA</div><div class="pageno">10</div>
+  </section>
+
+  <!-- 11 CIERRE -->
+  <section class="slide center">
+    <div class="title-impacta" style="font-size:64px">MUCHAS GRACIAS</div>
+    <p class="lead">Simulador de partículas 2D — motor en C con hashing espacial y visualización en Python.</p>
+    <p style="margin-top:14px"><span class="pill">C99 / C11</span><span class="pill">Spatial Hashing O(N)</span><span class="pill">CSV</span><span class="pill">Matplotlib</span><span class="pill">pyqtgraph</span></p>
+    <div class="footer">IMPACTA</div><div class="pageno">11</div>
+  </section>
+
+</div>
+
+<div class="hint">← → para navegar · F pantalla completa</div>
+<div class="nav"><button id="prev">‹</button><button id="next">›</button></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function show(n){slides[i].classList.remove('active');i=(n+slides.length)%slides.length;slides[i].classList.add('active');}
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')show(i+1);
+    else if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+  });
+</script>
+</body>
+</html>
