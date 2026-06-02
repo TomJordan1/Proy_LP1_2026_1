@@ -16,6 +16,8 @@ int main() {
 
     Config conf = configurar_sistema();
 
+    exportar_dimensiones_caja(conf);
+
     int modo_init;
     printf("\n1. Aleatorio\n2. Manual\nOpcion de inicializacion: ");
     scanf("%d", &modo_init);

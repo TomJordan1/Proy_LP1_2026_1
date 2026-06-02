@@ -33,4 +33,5 @@ FILE *abrir_csv_energia();
 void exportar_tick_trayectoria(FILE *f, int t, int i, Particula p);
 void exportar_tick_energia(FILE *f, int tick, double ec, double ep);
 void exportar_benchmark(int n, int ticks, double tiempo);
+void exportar_dimensiones_caja(Config c);
 #endif

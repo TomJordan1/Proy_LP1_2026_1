@@ -17,18 +17,17 @@ plt.rcParams.update({
     "font.size"        : 12,
     "font.family"      : "DejaVu Sans",
     "axes.grid"        : True,
-    "grid.alpha"       : 0.3,
-    "grid.linestyle"   : "--",
+    "grid.alpha"       : 0.5,             # Ajustado de 0.3 a 0.5
+    "grid.linestyle"   : ":",              # Ajustado de "--" a ":"
     "axes.spines.top"  : False,
     "axes.spines.right": False,
     "figure.facecolor" : "white",
-    "axes.facecolor"   : "#fafafa",
+    "axes.facecolor"   : "#f0f4f8",        # Ajustado de #fafafa al fondo claro original
     "savefig.dpi"      : 150,
     "lines.linewidth"  : 2.0,
 })
 
 _PALETA = plt.cm.tab20.colors
-
 
 
 # : Localizar y cargar CSV
@@ -80,11 +79,25 @@ def cargar_benchmark(ruta):
     print(f"  [OK] {ruta}  ({len(df):,} corridas)")
     return df
 
+def cargar_dimensiones(ruta):
+    """Lee el archivo dimensiones.csv y devuelve el ancho y alto."""
+    if ruta is None:
+        print("  [OMITIDO] dimensiones.csv no encontrado.")
+        return None, None
+    try:
+        df = pd.read_csv(ruta, encoding="utf-8")
+        ancho = float(df["ancho"].iloc[0])
+        alto = float(df["alto"].iloc[0])
+        print(f"  [OK] {ruta}  (ancho: {ancho}, alto: {alto})")
+        return ancho, alto
+    except Exception as e:
+        print(f"  [ERROR] No se pudo leer {ruta}: {e}")
+        return None, None
 
 
 # GRAFICO 1: ANIMACION GIF 
 def generar_animacion(df, ancho, alto, max_frames=120,
-                      archivo="simulacion.gif", fps=25,
+                      archivo="simulacion.gif", fps=30,
                       mostrar_flechas=False, mostrar_ids=False):
     """
     Genera el GIF de forma eficiente:
@@ -105,26 +118,25 @@ def generar_animacion(df, ancho, alto, max_frames=120,
 
     grupos = {t: g for t, g in df.groupby("tick")}
 
-    fig, ax = plt.subplots(figsize=(8, 8), dpi=90)
-    fig.patch.set_facecolor("#0d1117")
-    ax.set_facecolor("#0d1117")
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=200)
     ax.set_xlim(0, ancho)
-    ax.set_ylim(alto, 0)   
+    ax.set_ylim(0, alto)   
     ax.set_aspect("equal")
-    ax.set_xlabel("Posicion X (m)", color="white")
-    ax.set_ylabel("Posicion Y (m)", color="white")
+    ax.set_xlabel("Posicion X (m)", color="black")
+    ax.set_ylabel("Posicion Y (m)", color="black")
     ax.tick_params(colors="white")
     for spine in ax.spines.values():
-        spine.set_edgecolor("#444444")
+        spine.set_linewidth(2)
     ax.grid(color="#333333", alpha=0.5, linestyle="--")
 
-    pts_por_unidad = (fig.get_size_inches()[0] * 72) / ancho
-    ids = sorted(df["id"].unique())
-    colores = {pid: _PALETA[i % len(_PALETA)] for i, pid in enumerate(ids)}
+    # Forzamos un dibujado previo para que Matplotlib calcule los márgenes reales y el aspect ratio
+    fig.canvas.draw() # Forzar el cálculo de márgenes
+    bbox = ax.get_window_extent()
+    ancho_puntos = bbox.width * (72 / fig.dpi)
+    pts_por_unidad = ancho_puntos / ancho
 
-    scatter = ax.scatter([], [], alpha=0.85, zorder=5, edgecolors="black",
-                         linewidths=0.4)
-    titulo = ax.set_title("", color="white", fontsize=13, fontweight="bold")
+    scatter = ax.scatter([], [], alpha=0.85, zorder=5, edgecolors="none")
+    titulo = ax.set_title("", color="black", fontsize=14, fontweight="bold")
 
     quiver = None       
     textos = []          
@@ -143,18 +155,18 @@ def generar_animacion(df, ancho, alto, max_frames=120,
         g = grupos[t].sort_values("id")
         xy = g[["x", "y"]].values
         scatter.set_offsets(xy)
-        sz = (g["radio"].values * pts_por_unidad) ** 2
+        sz = np.pi * (g["radio"].values * pts_por_unidad) ** 2
         scatter.set_sizes(sz)
-        scatter.set_color([colores[pid] for pid in g["id"].values])
-        titulo.set_text(f"Simulacion V2 (Grid Hashing) — Tick {t}")
+        scatter.set_color("#3463db")
+        titulo.set_text(f"Simulacion (Grid Hashing) — Tick {t}")
 
         # Flechas de velocidad 
         if mostrar_flechas:
             vx, vy = g["vx"].values, g["vy"].values
             if quiver is None:
                 quiver = ax.quiver(xy[:, 0], xy[:, 1], vx, vy, color="#e74c3c",
-                                   angles="xy", scale_units="xy", scale=1,
-                                   width=0.004, headwidth=4, zorder=6)
+                                   angles="xy", scale_units="xy", scale=3,
+                                   width=0.005, headwidth=5, zorder=6)
             else:
                 quiver.set_offsets(xy)
                 quiver.set_UVC(vx, vy)
@@ -186,7 +198,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
 
 
 # GRAFICO 2: ENERGIA vs TIEMPO
-def graficar_energia(df, dt=0.008, archivo="grafico_energia.png"):
+def graficar_energia(df, dt=0.04, archivo="grafico_energia.png"):
     if df is None:
         return
     tiempo = df["tick"] * dt
@@ -241,7 +253,6 @@ def graficar_heatmap(df, ancho, alto, archivo="heatmap_densidad.png"):
                  fontsize=13, fontweight="bold", pad=12)
     ax.set_xlim(0, ancho)
     ax.set_ylim(0, alto)
-    ax.invert_yaxis()      
     ax.set_aspect("equal")
     plt.tight_layout()
     plt.savefig(archivo)
@@ -340,16 +351,29 @@ def main():
     df_tray = cargar_trayectorias(buscar_csv("trayectorias.csv", dirs))
     df_ener = cargar_energia(buscar_csv("energia.csv", dirs))
     df_bench = cargar_benchmark(buscar_csv("benchmark.csv", dirs))
+    
+    ancho_csv, alto_csv = cargar_dimensiones(buscar_csv("dimensiones.csv", dirs))
+    
+    if ancho_csv is not None:
+        # Prioridad 1: Archivo dimensiones.csv (Máxima prioridad)
+        ancho = ancho_csv
+        alto = alto_csv
+    elif ancho is not None:
+        # Prioridad 2: Argumentos pasados por la terminal/consola
+        pass # ancho y alto ya mantienen sus valores leídos de sys.argv
+    elif df_tray is not None:
+        # Prioridad 3: Estimación de seguridad basada en los límites de la trayectoria
+        ancho = float(df_tray["x"].max()) * 1.05
+        alto = float(df_tray["y"].max()) * 1.05
+    else:
+        # Prioridad 4: Valores por defecto si no hay absolutamente ningún dato
+        ancho = 1000.0
+        alto = 1000.0
 
     if df_tray is not None:
-        if ancho is None:
-            ancho = float(df_tray["x"].max()) * 1.05
-            alto = float(df_tray["y"].max()) * 1.05
         print(f"\n  Espacio   : {ancho:.0f} x {alto:.0f} m")
         print(f"  Particulas: {df_tray['id'].nunique()}")
-        print(f"  Ticks     : {df_tray['tick'].nunique()}\n")
-    else:
-        ancho, alto = ancho or 1000.0, alto or 1000.0
+        print(f"  Ticks     : {df_tray['tick'].nunique()}\n") 
 
     if not sin_gif:
         mostrar_flechas, mostrar_ids = preguntar_estilo()

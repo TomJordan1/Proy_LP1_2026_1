@@ -16,16 +16,16 @@ Config configurar_sistema() {
     scanf("%d", &c.n_particulas);
     getchar();
 
-    printf("¿Usar parametros fisicos predeterminados? (s/n): ");
+    printf("¿Usar parametros fisicos predeterminados (condiciones ideales para 1000 ticks)? (s/n): ");
     scanf(" %c", &opcion);
     getchar();
 
     if (opcion == 's' || opcion == 'S') {
         c.ticks = 1000;
-        c.dt = 0.008;
-        c.g = 9.81;
-        c.e = 0.85;
-        c.mu = 0.01;
+        c.dt = 0.040;
+        c.g = -9.81;
+        c.e = 1;
+        c.mu = 0;
     } else {
         printf("Ticks totales: ");
         scanf("%d", &c.ticks);

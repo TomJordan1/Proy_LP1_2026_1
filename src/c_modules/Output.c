@@ -8,7 +8,7 @@ FILE *abrir_csv_trayectorias() {
                 "Verificar permisos de escritura en el directorio.\n");
         exit(EXIT_FAILURE);
     }
-    fprintf(f, "tick,particula_id,x,y,vx,vy,radio\n");
+    fprintf(f, "tick,id,x,y,vx,vy,radio\n");
     return f;
 }
 
@@ -40,5 +40,18 @@ void exportar_benchmark(int n, int ticks, double tiempo) {
     }
     double tasa = (float)n * ticks / tiempo;
     fprintf(f, "%d,%d,%.4f,%.4f\n", n, ticks, tiempo, tasa);
+    fclose(f);
+}
+
+void exportar_dimensiones_caja(Config c) {
+    FILE *f = fopen("dimensiones.csv", "w");
+    if (!f) {
+        fprintf(stderr, 
+                "Error: No se pudo crear dimensiones.csv.\n"
+                "Verificar permisos de escritura en el directorio.\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(f, "ancho,alto\n");
+    fprintf(f, "%.2f,%.2f\n", c.ancho, c.alto);
     fclose(f);
 }
