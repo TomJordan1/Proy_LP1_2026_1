@@ -39,9 +39,8 @@ int main() {
         if (p[i].r > max_r) max_r = p[i].r;
     }
 
-    /* 4. Datos del Spatial Hashing (Limitados a 12 * N) */
     double lado_celda = 2.0 * max_r;
-    int hash_size = 12 * conf.n_particulas; /* Memoria O(N) */
+    int hash_size = 12 * conf.n_particulas;
 
     FILE *f_tray = abrir_csv_trayectorias();
     FILE *f_ener = abrir_csv_energia();
@@ -53,10 +52,7 @@ int main() {
             actualizar_fisica_basica(&p[i], conf);
             resolver_colision_paredes(&p[i], conf);
         }
-        /* BUCLE B: SPATIAL HASHING O(N) EN MEMORIA Y PROCESO */
-        /* B.1 - Vaciar la tabla Hash (solo toma 4N iteraciones) */
         memset(head, -1, hash_size * sizeof(int));
-        /* B.2 - Llenar la tabla Hash */
         for (int i = 0; i < conf.n_particulas; i++) {
             int cx = (int)(p[i].x / lado_celda);
             int cy = (int)(p[i].y / lado_celda);
@@ -67,17 +63,14 @@ int main() {
             head[h] = i;
         }
 
-        /* B.3 - Verificar colisiones (Recorriendo partículas, no el espacio vacío) */
         for (int i = 0; i < conf.n_particulas; i++) {
             int cx = (int)(p[i].x / lado_celda);
             int cy = (int)(p[i].y / lado_celda);
 
-            /* a) Choques dentro de la MISMA celda (se usa j > i para no repetir) */
             unsigned int h = hash(cx, cy, hash_size);
             int j = head[h];
             while (j != -1) {
                 if (j > i) {
-                    /* Verificar colisión real de celda (evitar falsos positivos del Hash) */
                     int cjx = (int)(p[j].x / lado_celda);
                     int cjy = (int)(p[j].y / lado_celda);
                     if (cx == cjx && cy == cjy) {
@@ -87,7 +80,6 @@ int main() {
                 j = next[j];
             }
 
-            /* b) Choques con celdas VECINAS (4 direcciones) */
             int dx[4] = {1, -1, 0, 1};
             int dy[4] = {0, 1, 1, 1};
             for (int o = 0; o < 4; o++) {
@@ -98,7 +90,6 @@ int main() {
                 int nj = head[h_vecina];
 
                 while (nj != -1) {
-                    /* Verificar que pertenecen a la coordenada vecina exacta */
                     int cnjx = (int)(p[nj].x / lado_celda);
                     int cnjy = (int)(p[nj].y / lado_celda);
                     if (nx == cnjx && ny == cnjy) {
