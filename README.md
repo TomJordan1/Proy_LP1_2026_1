@@ -22,9 +22,6 @@ El presente proyecto describe el diseño e implementación de un simulador de co
 ## 📎 Recursos
 * **Diapositivas (Canva):** [Presentación del Proyecto](https://canva.link/zb432bjr0ofj4bi)
 
-https://uni-pe.zoom.us/j/6514273093?pwd=dEVnWEhVUlgzbmRUVTNuNG9YdlpIZz09
-
-
 ## 📂 Estructura del Repositorio
 
 ```text
