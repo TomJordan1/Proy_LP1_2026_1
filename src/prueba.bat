@@ -1,41 +1,69 @@
 @echo off
 REM ============================================================
-REM prueba.bat - Ejecuta TODO el flujo en una carpeta nueva
-REM   1) Compila el simulador en C
-REM   2) Crea la carpeta resultados_prueba
-REM   3) Corre el simulador (responde el menu: 1000 1000 100 s 1)
-REM   4) Genera las graficas (energia, heatmap, benchmark, GIF)
-REM Uso: doble clic, o desde la terminal:  prueba.bat
+REM prueba.bat - Lanzador unico del Simulador de Particulas V2
+REM   Compila y permite: simulacion + graficas, benchmark, o ambos.
 REM ============================================================
-setlocal
+setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
-echo === [1/4] Compilando simulador ===
-gcc -Wall -Wextra -O2 c_modules\Opti.c c_modules\Fisica.c c_modules\Input.c -o c_modules\Simulador.exe -lm
-if errorlevel 1 (
-    echo  Aviso: fallo la compilacion. Se intentara usar c_modules\Simulador.exe existente.
-)
-if not exist c_modules\Simulador.exe (
-    echo  ERROR: no existe el ejecutable y no se pudo compilar. Revisa que gcc este instalado.
-    pause
-    exit /b 1
-)
-
-echo === [2/4] Creando carpeta de resultados ===
-if not exist resultados_prueba mkdir resultados_prueba
-cd resultados_prueba
-
-echo === [3/4] Ejecutando simulador (responde: 1000 1000 100 s 1) ===
-..\c_modules\Simulador.exe
-
-echo === [4/4] Generando graficas con Python ===
-python ..\visualizar.py
-if errorlevel 1 (
-    echo  Aviso: no se pudieron generar las graficas. Revisa que tengas instaladas las librerias:
-    echo    pip install pandas matplotlib numpy pillow
-)
-
+echo ============================================================
+echo            SIMULADOR DE PARTICULAS 2D - IMPACTA
+echo ============================================================
 echo.
-echo === LISTO. Resultados en: src\resultados_prueba\ ===
-echo   trayectorias.csv, energia.csv, benchmark.csv
-echo   grafico_energia.png, heatmap_densidad.png, grafico_be
+echo === Compilando simulador en C ===
+gcc -Wall -Wextra -O2 c_modules\Opti.c c_modules\Fisica.c c_modules\Input.c -o c_modules\Simulador.exe -lm
+if not exist c_modules\Simulador.exe (
+    echo  ERROR: no se pudo compilar. Verifica que gcc este instalado.
+    pause & exit /b 1
+)
+echo  OK Compilado.
+echo.
+
+:MENU
+echo ------------------------------------------------------------
+echo  Que deseas ejecutar?
+echo    1. Simulacion + graficas (GIF, energia, heatmap)
+echo    2. Benchmark (varios N) + grafico de rendimiento
+echo    3. Ambos (simulacion y luego benchmark)
+echo    4. Salir
+echo ------------------------------------------------------------
+set /p OPCION=Opcion [1/2/3/4]: 
+
+if "%OPCION%"=="1" ( call :SIM & goto MENU )
+if "%OPCION%"=="2" ( call :BENCH & goto MENU )
+if "%OPCION%"=="3" ( call :SIM & call :BENCH & goto MENU )
+if "%OPCION%"=="4" exit /b 0
+echo Opcion invalida.
+goto MENU
+
+REM ---------------- SUBRUTINA: SIMULACION ----------------
+:SIM
+echo.
+echo === Simulacion: responde el menu (ej: 1000 1000 100 s 1) ===
+if not exist resultados_prueba mkdir resultados_prueba
+pushd resultados_prueba
+..\c_modules\Simulador.exe
+echo === Generando graficas ===
+python ..\visualizar.py
+popd
+echo.
+echo  LISTO. Resultados en src\resultados_prueba\
+echo.
+goto :eof
+
+REM ---------------- SUBRUTINA: BENCHMARK ----------------
+:BENCH
+echo.
+echo === Benchmark: corriendo varios tamanos de N ===
+if exist benchmark.csv del /q benchmark.csv
+set TAMANOS=10 50 100 250 500 1000 2000
+for %%N in (!TAMANOS!) do (
+    echo   --- N = %%N ---
+    (echo 1000& echo 1000& echo %%N& echo s& echo 1) | c_modules\Simulador.exe >nul
+)
+echo === Generando grafico de benchmark ===
+python visualizar.py --solo-benchmark
+echo.
+echo  LISTO. Revisa benchmark.csv y grafico_benchmark.png
+echo.
+goto :eof

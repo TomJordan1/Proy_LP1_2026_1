@@ -295,12 +295,6 @@ def graficar_benchmark(df, archivo="grafico_benchmark.png"):
 
     ax1 = axes[0]
     ax1.plot(n, t, "o-", color="#e74c3c", markersize=9, label="Tiempo medido (s)", zorder=5)
-    if len(n) >= 2 and n[0] > 0:
-        esc_lin = t[0] / n[0]
-        ax1.plot(n, esc_lin * n, "--", color="#3498db", alpha=0.8, label="Referencia O(N)")
-        esc_cuad = t[0] / (n[0] ** 2)
-        ax1.plot(n, esc_cuad * n ** 2, ":", color="#95a5a6", alpha=0.8,
-                 label="Referencia O(N^2)")
     ax1.set_xlabel("N particulas")
     ax1.set_ylabel("Tiempo de ejecucion (s)")
     ax1.set_title("Tiempo total vs N particulas")
