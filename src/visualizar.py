@@ -1,29 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-visualizar.py — Visualizador unificado del Simulador V2 (Opti.c, Grid Hashing)
-Curso: SW-303 Lenguaje de Programacion I — Imperativo, Lenguaje C
-
-Lee los CSV generados por el simulador en C (Opti.c) y produce:
-  1. simulacion.gif        — Animacion de las particulas (rapida, submuestreada)
-  2. grafico_energia.png   — Energia cinetica, potencial y total vs tiempo
-  3. heatmap_densidad.png  — Mapa de densidad de posiciones acumuladas
-  4. grafico_benchmark.png — Rendimiento (part*tick/s) y tiempo vs N particulas
-
-IMPORTANTE — esquema de columnas de la V2 (distinto al proyecto original):
-  trayectorias.csv : tick,id,x,y,vx,vy,radio
-  energia.csv      : tick,cinetica,potencial,total
-  benchmark.csv    : n_particulas,ticks,tiempo_segundos,part_por_segundo  (SIN cabecera)
-
-Uso:
-  python visualizar.py                         # busca CSV en ./ y ./target y ./c_modules
-  python visualizar.py <ancho> <alto> <dir>    # dir donde estan los CSV
-  python visualizar.py --solo-benchmark        # solo el grafico de benchmark
-  python visualizar.py --sin-gif               # omite el GIF (lo pesado)
-
-Requisitos:
-  pip install pandas matplotlib numpy pillow
-"""
 
 import os
 import sys
@@ -31,12 +7,11 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use("Agg")           # backend sin ventana: mas rapido para guardar archivos
+matplotlib.use("Agg")          
 import matplotlib.pyplot as plt
 
-# =============================================================
-# ESTILO GLOBAL — aspecto profesional
-# =============================================================
+
+# ESTILOS
 plt.rcParams.update({
     "figure.figsize"   : (12, 8),
     "font.size"        : 12,
@@ -55,9 +30,8 @@ plt.rcParams.update({
 _PALETA = plt.cm.tab20.colors
 
 
-# =============================================================
-# AUXILIAR: localizar y cargar CSV
-# =============================================================
+
+# : Localizar y cargar CSV
 def buscar_csv(nombre, dirs):
     """Devuelve la primera ruta existente de `nombre` entre los directorios dados."""
     for d in dirs:
@@ -97,7 +71,7 @@ def cargar_benchmark(ruta):
                      names=None if tiene_cabecera else cols, encoding="utf-8",
                      skipinitialspace=True)
     df.columns = [str(c).strip() for c in df.columns]
-    # Coercer a numerico y descartar filas no validas
+    
     for c in cols:
         df[c] = pd.to_numeric(df[c], errors="coerce")
     df = df.dropna(subset=cols)
@@ -107,9 +81,8 @@ def cargar_benchmark(ruta):
     return df
 
 
-# =============================================================
-# GRAFICO 1: ANIMACION GIF (version eficiente)
-# =============================================================
+
+# GRAFICO 1: ANIMACION GIF 
 def generar_animacion(df, ancho, alto, max_frames=120,
                       archivo="simulacion.gif", fps=25,
                       mostrar_flechas=False, mostrar_ids=False):
@@ -136,7 +109,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
     fig.patch.set_facecolor("#0d1117")
     ax.set_facecolor("#0d1117")
     ax.set_xlim(0, ancho)
-    ax.set_ylim(alto, 0)   # Y invertido: y=0 arriba, gravedad cae hacia abajo
+    ax.set_ylim(alto, 0)   
     ax.set_aspect("equal")
     ax.set_xlabel("Posicion X (m)", color="white")
     ax.set_ylabel("Posicion Y (m)", color="white")
@@ -153,8 +126,8 @@ def generar_animacion(df, ancho, alto, max_frames=120,
                          linewidths=0.4)
     titulo = ax.set_title("", color="white", fontsize=13, fontweight="bold")
 
-    quiver = None        # se crea en el primer frame si mostrar_flechas
-    textos = []          # objetos Text para ids (se crean en el primer frame)
+    quiver = None       
+    textos = []          
 
     from PIL import Image as PILImage
     frames_pil = []
@@ -175,7 +148,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
         scatter.set_color([colores[pid] for pid in g["id"].values])
         titulo.set_text(f"Simulacion V2 (Grid Hashing) — Tick {t}")
 
-        # Flechas de velocidad (vector vx, vy en unidades del mundo)
+        # Flechas de velocidad 
         if mostrar_flechas:
             vx, vy = g["vx"].values, g["vy"].values
             if quiver is None:
@@ -211,9 +184,8 @@ def generar_animacion(df, ancho, alto, max_frames=120,
     print(f"Grafico guardado: {archivo}")
 
 
-# =============================================================
+
 # GRAFICO 2: ENERGIA vs TIEMPO
-# =============================================================
 def graficar_energia(df, dt=0.008, archivo="grafico_energia.png"):
     if df is None:
         return
@@ -248,9 +220,8 @@ def graficar_energia(df, dt=0.008, archivo="grafico_energia.png"):
     print(f"Grafico guardado: {archivo}")
 
 
-# =============================================================
+
 # GRAFICO 3: HEATMAP DE DENSIDAD
-# =============================================================
 def graficar_heatmap(df, ancho, alto, archivo="heatmap_densidad.png"):
     if df is None:
         return
@@ -270,7 +241,7 @@ def graficar_heatmap(df, ancho, alto, archivo="heatmap_densidad.png"):
                  fontsize=13, fontweight="bold", pad=12)
     ax.set_xlim(0, ancho)
     ax.set_ylim(0, alto)
-    ax.invert_yaxis()      # Y invertido para coincidir con la convencion de la simulacion
+    ax.invert_yaxis()      
     ax.set_aspect("equal")
     plt.tight_layout()
     plt.savefig(archivo)
@@ -278,9 +249,8 @@ def graficar_heatmap(df, ancho, alto, archivo="heatmap_densidad.png"):
     print(f"Grafico guardado: {archivo}")
 
 
-# =============================================================
+
 # GRAFICO 4: BENCHMARK
-# =============================================================
 def graficar_benchmark(df, archivo="grafico_benchmark.png"):
     if df is None or len(df) == 0:
         return
@@ -322,15 +292,10 @@ def graficar_benchmark(df, archivo="grafico_benchmark.png"):
     print(f"Grafico guardado: {archivo}")
 
 
-# =============================================================
+
 # PRINCIPAL
-# =============================================================
 def preguntar_estilo():
-    """
-    Menu para elegir como se dibuja la animacion. Si no hay terminal interactiva
-    (p.ej. ejecucion automatica), devuelve el estilo simple por defecto.
-    Tambien se puede forzar por bandera: --flechas, --ids, --simple.
-    """
+    
     if "--simple" in sys.argv:
         return False, False
     flechas = "--flechas" in sys.argv
