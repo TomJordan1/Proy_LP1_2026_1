@@ -135,7 +135,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
     ancho_puntos = bbox.width * (72 / fig.dpi)
     pts_por_unidad = ancho_puntos / ancho
 
-    scatter = ax.scatter([], [], alpha=0.85, zorder=5, edgecolors="none")
+    scatter = ax.scatter([], [], zorder=5, edgecolors="#000000", linewidths=1)
     titulo = ax.set_title("", color="black", fontsize=14, fontweight="bold")
 
     quiver = None       
@@ -157,7 +157,7 @@ def generar_animacion(df, ancho, alto, max_frames=120,
         scatter.set_offsets(xy)
         sz = np.pi * (g["radio"].values * pts_por_unidad) ** 2
         scatter.set_sizes(sz)
-        scatter.set_color("#3463db")
+        scatter.set_edgecolor("#000000")
         titulo.set_text(f"Simulacion (Grid Hashing) — Tick {t}")
 
         # Flechas de velocidad 

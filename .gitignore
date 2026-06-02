@@ -1,4 +1,6 @@
 /src/*.csv
 /src/target
 /src/-p
+/src/resultados_prueba
+/src/_sim_tmp
 **.exe
