@@ -1,9 +1,3 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include "Simulador.h"
 
 #define MX 500005
@@ -49,10 +43,8 @@ int main() {
     double lado_celda = 2.0 * max_r;
     int hash_size = 12 * conf.n_particulas; /* Memoria O(N) */
 
-    FILE *f_tray = fopen("trayectorias.csv", "w");
-    FILE *f_ener = fopen("energia.csv", "w");
-    fprintf(f_tray, "tick,id,x,y,vx,vy,radio\n");
-    fprintf(f_ener, "tick,cinetica,potencial,total\n");
+    FILE *f_tray = abrir_csv_trayectorias();
+    FILE *f_ener = abrir_csv_energia();
 
     clock_t inicio = clock();
 
@@ -121,21 +113,15 @@ int main() {
         for (int i = 0; i < conf.n_particulas; i++) {
             ec += 0.5 * p[i].m * (p[i].vx * p[i].vx + p[i].vy * p[i].vy);
             ep += p[i].m * conf.g * (conf.alto - p[i].y);
-
-            fprintf(f_tray, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f\n", t, i, p[i].x, p[i].y, p[i].vx,
-                    p[i].vy, p[i].r);
+            exportar_tick_trayectoria(f_tray, t, i, p[i]);
         }
-        fprintf(f_ener, "%d,%.2f,%.2f,%.2f\n", t, ec, ep, ec + ep);
+        exportar_tick_energia(f_ener, t, ec, ep);
     }
 
     double total_t = (double)(clock() - inicio) / CLOCKS_PER_SEC;
-    FILE *f_bench = fopen("benchmark.csv", "a");
-    fprintf(f_bench, "%d,%d,%.4f, %.4f\n", conf.n_particulas, conf.ticks, total_t,
-            (float)conf.n_particulas * conf.ticks / total_t);
-
+    exportar_benchmark(conf.n_particulas, conf.ticks, total_t);
     fclose(f_tray);
     fclose(f_ener);
-    fclose(f_bench);
 
     printf("\nSimulacion completada en %.4fs.\n", total_t);
     return 0;
