@@ -3,4 +3,5 @@
 /src/-p
 /src/resultados_prueba
 /src/_sim_tmp
+/src/_bench_tmp
 **.exe

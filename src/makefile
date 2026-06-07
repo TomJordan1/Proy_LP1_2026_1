@@ -1,58 +1,75 @@
-# =============================================================
-# Makefile
-# =============================================================
-
-CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c99 -O2
+CC = gcc
+CFLAGS = -Wall -Wextra -O2
 LDFLAGS = -lm
+SRC = c_modules/Opti.c c_modules/Fisica.c c_modules/Input.c c_modules/Output.c
+EXEC = c_modules/Simulador.exe
+PYTHON ?= python
+OUT_DIR = resultados_prueba
+TAMANOS = 10 50 100 250 500 1000 2000
 
-# Coge todos los .c en la carpeta actual
-SRC     = $(wildcard c_modules/*.c)
+.PHONY: all sim bench clean help check-deps
 
-# Crea la subcarpeta 'target' y guarda ahí el .exe
-OUT_DIR = target
-TARGET  = $(OUT_DIR)/simulador.exe
+# Target por defecto
+all: help
 
-# Variables por defecto
-ANCHO   ?= 1000
-ALTO    ?= 1000
-N_PART  ?= 50
+help:
+	@echo ============================================================
+	@echo                    SIMULADOR DE PARTICULAS                  
+	@echo ============================================================
+	@echo Opciones de ejecucion disponibles:
+	@echo   mingw32-make sim    : Ejecuta la simulacion + graficas
+	@echo   mingw32-make bench  : Ejecuta el benchmark de rendimiento
+	@echo   mingw32-make all_run: Ejecuta tanto simulacion como benchmark
+	@echo   mingw32-make clean  : Borra archivos temporales y exe
+	@echo ============================================================
 
-# =============================================================
-# REGLAS DE COMPILACIÓN
-# =============================================================
-all: $(OUT_DIR) $(TARGET)
+check-deps:
+	@echo === Verificando dependencias de Python ===
+	@$(PYTHON) -c "import numpy, pandas, matplotlib, PIL" >nul 2>&1 || (echo ERROR: Faltan librerias. && exit 1)
+	@echo OK - Dependencias listas.
+
+$(EXEC):
+	@echo === Compilando simulador en C ===
+	$(CC) $(CFLAGS) $(SRC) -o $(EXEC) $(LDFLAGS)
+	@echo OK - Compilado exitosamente.
 
 $(OUT_DIR):
-	if not exist $(OUT_DIR) mkdir $(OUT_DIR)
+	@mkdir $(OUT_DIR) 2>nul || (exit 0)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $@ $(LDFLAGS)
-	@echo "OK Compilado: $(TARGET)"
+sim: check-deps $(EXEC) $(OUT_DIR)
+	@echo === Iniciando Simulacion ===
+	@rmdir /S /Q _sim_tmp 2>nul || (exit 0)
+	@mkdir _sim_tmp
+	@copy /Y visualizar.py _sim_tmp\ >nul
+	@echo Ejecutando simulador en C...
+	@cd _sim_tmp && ..\c_modules\Simulador.exe
+	@echo Generando graficas con Python...
+	@cd _sim_tmp && $(PYTHON) visualizar.py
+	@move /Y _sim_tmp\*.csv $(OUT_DIR)\ >nul 2>&1 || (exit 0)
+	@move /Y _sim_tmp\*.gif $(OUT_DIR)\ >nul 2>&1 || (exit 0)
+	@move /Y _sim_tmp\*.png $(OUT_DIR)\ >nul 2>&1 || (exit 0)
+	@rmdir /S /Q _sim_tmp
+	@echo LISTO. Resultados guardados en $(OUT_DIR)\
 
-# =============================================================
-# RUN: Automatización completa
-# =============================================================
-run: all
-	@echo === 1. Ejecutando Simulador en C ===
-	@echo $(ANCHO) > temp_in.txt
-	@echo $(ALTO) >> temp_in.txt
-	@echo $(N_PART) >> temp_in.txt
-	@echo s >> temp_in.txt
-	@echo 1 >> temp_in.txt
-	target\simulador.exe < temp_in.txt
-	@del temp_in.txt 2>nul || rm -f temp_in.txt
-	
-	@echo === 2. Moviendo resultados CSV a $(OUT_DIR)/ ===
-	@move /y trayectorias.csv $(OUT_DIR)\ >nul 2>&1 || mv -f trayectorias.csv $(OUT_DIR)/ 2>/dev/null || true
-	@move /y energia.csv $(OUT_DIR)\ >nul 2>&1 || mv -f energia.csv $(OUT_DIR)/ 2>/dev/null || true
-	@move /y benchmark.csv $(OUT_DIR)\ >nul 2>&1 || mv -f benchmark.csv $(OUT_DIR)/ 2>/dev/null || true
-	
-	@echo === 3. Renderizando animacion con Python ===
-	py animador_particulas.py $(ANCHO) $(ALTO) $(OUT_DIR)/trayectorias.csv
+bench: check-deps $(EXEC) $(OUT_DIR)
+	@echo === Iniciando Benchmark ===
+	@rmdir /S /Q _bench_tmp 2>nul || (exit 0)
+	@mkdir _bench_tmp
+	@copy /Y visualizar.py _bench_tmp\ >nul
+	@cd _bench_tmp && for %%N in ($(TAMANOS)) do ( echo --- Corriendo N = %%N --- && (echo 1000^& echo 1000^& echo %%N^& echo s^& echo 1) | ..\c_modules\Simulador.exe >nul )
+	@echo Generando grafico de rendimiento...
+	@cd _bench_tmp && $(PYTHON) visualizar.py --solo-benchmark
+	@move /Y _bench_tmp\*.csv $(OUT_DIR)\ >nul 2>&1 || (exit 0)
+	@move /Y _bench_tmp\*.png $(OUT_DIR)\ >nul 2>&1 || (exit 0)
+	@rmdir /S /Q _bench_tmp
+	@echo LISTO. Benchmark guardado en $(OUT_DIR)\
 
-# =============================================================
-# LIMPIEZA
-# =============================================================
+all_run: sim bench
+
 clean:
-	rm -rf $(OUT_DIR) 2>/dev/null || rmdir /s /q $(OUT_DIR)
+	@echo === Limpiando entorno ===
+	@rmdir /S /Q _sim_tmp 2>nul || (exit 0)
+	@rmdir /S /Q _bench_tmp 2>nul || (exit 0)
+	@rmdir /S /Q $(OUT_DIR) 2>nul || (exit 0)
+	@del /Q c_modules\Simulador.exe 2>nul || (exit 0)
+	@echo OK - Entorno limpio.

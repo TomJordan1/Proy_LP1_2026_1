@@ -16,7 +16,7 @@ Config configurar_sistema() {
     scanf("%d", &c.n_particulas);
     getchar();
 
-    printf("¿Usar parametros fisicos predeterminados (condiciones ideales para 1000 ticks)? (s/n): ");
+    printf("Usar parametros fisicos predeterminados (condiciones ideales para 1000 ticks)? (s/n): ");
     scanf(" %c", &opcion);
     getchar();
 
