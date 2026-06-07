@@ -1,0 +1,8 @@
+pandas
+matplotlib
+numpy
+pillow
+pyqtgraph
+PyQt5
+imageio
+imageio-ffmpeg
