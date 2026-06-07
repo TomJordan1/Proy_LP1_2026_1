@@ -7,15 +7,15 @@ REM ============================================================
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
           
-echo   @@@@+  @@@@@@@   @@@@@@@  @@@@@@@@@@    -@@@@@@@     @@@@@@@@@# @@@@@@@@@@@    @@@@@@=           
-echo   @@@@+  @@@@@@@- @@@@@@@@  @@@@  @@@@@   @@@@@@@@    @@@@@+  @      @@@@@      @@@@@@@@           
-echo   @@@@+  @@@@@@@@@@@@@@@@@  @@@@@@@@@@   +@@@@+@@@@   @@@@*          @@@@.     @@@@#+@@@@          
-echo   @@@@+  @@@@ #@@@@@-:@@@@  @@@@@        @@@@@@@@@@   @@@@@@*@@:     @@@@.     @@@@@@@@@@          
-echo   @@@@+  @@@@  @@@@@ :@@@@  @@@@        @@@@@@@@@@@@   @@@@@@@@@@    @@@@.    @@@@@@@@@@@@         
+echo   @@@@  @@@@@@@   @@@@@@@  @@@@@@@@@@     @@@@@@@     @@@@@@@@@# @@@@@@@@@@@    @@@@@@           
+echo   @@@@  @@@@@@@  @@@@@@@@  @@@@  @@@@@   @@@@@@@@    @@@@@    @     @@@@       @@@@@@@@           
+echo   @@@@  @@@@@@@@@@@@@@@@@  @@@@@@@@@@    @@@  @@@@   @@@@           @@@@      @@@@  @@@@          
+echo   @@@@  @@@@  @@@@@  @@@@  @@@@@        @@@@@@@@@@   @@@@@@@@       @@@@      @@@@@@@@@@          
+echo   @@@@  @@@@  @@@@@  @@@@  @@@@        @@@@@  @@@@@   @@@@@@@@@@    @@@@     @@@@@  @@@@@         
                                  
-echo ============================================================
-echo            SIMULADOR DE PARTICULAS
-echo ============================================================
+echo            ============================================================
+echo                                SIMULADOR DE PARTICULAS
+echo            ============================================================
 echo.
 
 REM ------------------------------------------------------------
@@ -75,7 +75,7 @@ echo === Detectando Python ===
 set PYTHON_CMD=
 
 for %%V in (3.14 3.13 3.12 3.11) do (
-    py -%%V -c "import numpy,pandas,matplotlib" >nul 2>&1
+    py -%%V -c "import numpy,pandas,matplotlib,pillow,pyqtgraph,PyQt5,imageio,imageio-ffmpeg" >nul 2>&1
     if not errorlevel 1 (
         set PYTHON_CMD=py -%%V
         goto :PYTHON_OK
@@ -89,7 +89,7 @@ echo   - pandas
 echo   - matplotlib
 echo.
 echo Instala:
-echo   py -3 -m pip install numpy pandas matplotlib
+echo   py -3 -m pip pandas matplotlib numpy pillow pyqtgraph PyQt5 imageio imageio-ffmpeg
 echo.
 pause
 exit /b 1
