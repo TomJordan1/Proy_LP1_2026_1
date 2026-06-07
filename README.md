@@ -29,12 +29,16 @@ Proy_LP1_2026_1/
 ├── .gitignore                  # Archivos y carpetas ignorados por Git
 ├── example.gif                 # Ejemplo de la salida deseada
 ├── README.md                   # Documentación principal del proyecto
+├── guia_de_uso_rapido.md       # Manual conciso para probar el programa del proyecto
 ├── docs/                       # Documentación adicional, informes o manuales del proyecto
 └── src/                        # Código fuente principal
     ├── c_modules/              # Módulos del simulador en C
     │   ├── Fisica.c            # Lógica de físicas, movimientos y colisiones
     │   ├── Input.c             # Manejo de menús y entrada de datos del usuario
+    |   ├── Output.c            # Manejo de los archivos de salida de la simulación
     │   ├── Opti.c              # Archivo principal (Main) y optimización espacial
     │   └── Simulador.h         # Cabecera central (estructuras, prototipos y librerías)
-    ├── animador_particulas.py  # Script de Python para renderizar la simulación
+    ├── visualizar.py           # Script de Python para renderizar la simulación
+    ├── run.bat                 # Script ejecutable para probar el programa (compilación, ejecución y renderizado)
+    ├── requirements.txt        # Archivo de texto con las depedencias para el módulo en Python
     └── makefile                # Script de automatización (compilación, ejecución y renderizado)
