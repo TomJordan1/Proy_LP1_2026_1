@@ -13,7 +13,7 @@ Antes de comenzar, asegúrate de tener instalados en tu sistema:
 
 ## 🚀 Opciones de Ejecución
 
-Este programa está diseñado para automatizar el proceso de compilación y ejecución. Puedes elegir entre usar **Makefile** o un archivo **Batch (.bat)** para Windows.
+Este programa está diseñado para automatizar el proceso de compilación, instalación de dependencias y ejecución del programa. Puedes elegir entre usar **Makefile** o un archivo **Batch (.bat)** para Windows.
 
 ### Opción 1: Usando Makefile
 
