@@ -1,14 +1,30 @@
-# makefile
+# Guía de Uso Rápido - IMPACTA
 
-## Comando Base de Ejecución
+Sigue estas instrucciones para ejecutar la simulación de partículas de forma sencilla en tu entorno preferido.
 
-Abre una terminal de PowerShell o CMD orientada en la carpeta raíz del código fuente (Proy_LP1_2026_1/src) y ejecuta el comando de automatización relativo a makefile.
+## ⚠️ Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalados en tu sistema:
+- **Un compilador de C** (como GCC a través de MinGW en Windows o el paquete build-essential en Linux).
+- **Python 3.x** (se recomienda la versión más reciente).
+- **Make** (opcional, si decides usar la opción de Makefile, como `mingw32-make` en Windows).
+
+---
+
+## 🚀 Opciones de Ejecución
+
+Este programa está diseñado para automatizar el proceso de compilación y ejecución. Puedes elegir entre usar **Makefile** o un archivo **Batch (.bat)** para Windows.
+
+### Opción 1: Usando Makefile
+
+Abre una terminal (PowerShell, CMD o bash) orientada en la carpeta raíz del código fuente (`Proy_LP1_2026_1/src`) y ejecuta el comando base:
 
 ```text
 mingw32-make 
 ```
+*(Nota: si estás en Linux, simplemente usa `make`)*
 
-Después de ello, se mostrará esta TUI con opciones a elegir para probar el programa.
+Después de ello, se mostrará esta interfaz de texto (TUI) con las opciones disponibles:
 
 ```text
  ============================================================
@@ -22,32 +38,9 @@ Después de ello, se mostrará esta TUI con opciones a elegir para probar el pro
  ============================================================
 ```
 
-Independientemente de la opción escogida, se verificará si el computador tiene las dependencias necesarias para correr los módulos en C y Python. En caso que no, los instalará en la última versión de Python al día de hoy, que para este caso es la 3.14.
+### Opción 2: Usando Batch (.bat)
 
-### Módulo C
-
-Luego se te pedirá ingresar las dimensiones del entorno que contendrá a las n partículas, que también se solicitará indicar dicha cantidad n.
-
-Subsiguiente a ello, deberá indicar si se correrá la simulación en condiciones físicas ideales (rozamiento con paredes igual a cero y coeficiente de restitución igual a 1) o personalizadas.
-
-Por último, se preguntará si se desea usar masas y radios aleatorios para cada una de las n partículas (dentro de ciertos parámetros internos) o ingresar manualmente uno por uno.
-
-### Módulo Python
-
-Previo a la generación de las imágenes solicitadas al principio, se consultará si se desea agregar más información sobre las partículas dentro de la animación contenida en simulacion.gif. De acuerdo a lo que se requiera, deberá elegir una de las 3 opciones.
-
-```text
-Como quieres la animacion?
-1. Simple        - circulos por radio (mas rapido)
-2. Con flechas   - circulos + vector de velocidad
-3. Flechas + radio - circulos + flechas + tamano del radio
-```
-
-En caso de haber solicitado realizar el benchmark, se probará para los casos donde n sea igual a 10, 50, 100, 250, 500, 1000, 2000.
-
-# bat
-
-Los pasos para este ejecutable son equivalentes a los ya vistos en el makefile, solo que al momento de correrlo, le saldrá en pantalla lo siguiente:
+Esta opción es preferible si estás en Windows. Ejecuta el archivo `run.bat` desde la terminal o haciendo doble clic sobre él en la carpeta `src`. En la pantalla se mostrará lo siguiente:
 
 ```text
 ------------------------------------------------------------
@@ -60,4 +53,41 @@ Los pasos para este ejecutable son equivalentes a los ya vistos en el makefile, 
 Opcion [1/2/3/4]:
 ```
 
-Según lo que se requiera, se selecciona alguna de las opciones y el resto del flujo de uso sería el que ya se describió.
+Selecciona la opción deseada según lo que requieras probar.
+
+---
+
+## ⚙️ Flujo de Configuración
+
+Independientemente de la opción de ejecución escogida, el sistema verificará automáticamente si tu entorno de Python cuenta con las dependencias necesarias y las instalará si faltan (`pandas`, `matplotlib`, etc.).
+
+Tras esto, comenzará el flujo interactivo:
+
+### 1. Configuración del Módulo C (Física)
+- **Dimensiones y Cantidad:** Se te pedirá ingresar las dimensiones del entorno (caja) y la cantidad $n$ de partículas a simular.
+- **Condiciones Físicas:** Deberás indicar si la simulación se correrá en condiciones físicas **ideales** (rozamiento con paredes igual a cero y coeficiente de restitución igual a 1) o **personalizadas**.
+- **Propiedades de las Partículas:** Se preguntará si deseas asignar masas y radios aleatorios para cada partícula o ingresarlos manualmente uno por uno.
+
+### 2. Configuración del Módulo Python (Visualización)
+Si solicitaste ejecutar la simulación gráfica, el programa consultará el nivel de detalle deseado para el renderizado final de la animación (`simulacion.gif`).
+
+```text
+Como quieres la animacion?
+1. Simple          - circulos por radio (mas rapido)
+2. Con flechas     - circulos + vector de velocidad
+3. Flechas + radio - circulos + flechas + tamano del radio
+```
+
+### 3. Benchmark (Opcional)
+En caso de haber seleccionado una opción que incluya el benchmark de rendimiento, el sistema probará la simulación automáticamente para $n = 10, 50, 100, 250, 500, 1000$ y $2000$, generando una gráfica con los tiempos de ejecución.
+
+---
+
+## 🛠️ Resolución de Problemas Comunes
+
+- **Error: `mingw32-make` no se reconoce como un comando interno o externo.**
+  *Solución:* Asegúrate de tener MinGW instalado y que la ruta a la carpeta `bin` esté agregada a las Variables de Entorno (`PATH`) de tu sistema.
+- **Error: `python` o `pip` no encontrado.**
+  *Solución:* Durante la instalación de Python, asegúrate de marcar la casilla *"Add Python to PATH"*. Reinicia tu terminal tras instalarlo.
+- **El renderizado en Python tarda demasiado.**
+  *Solución:* Para grandes cantidades de partículas (ej. $n > 500$), selecciona la opción de animación **1. Simple** y limita el tiempo de simulación, ya que el trazado gráfico de `matplotlib` es costoso.
